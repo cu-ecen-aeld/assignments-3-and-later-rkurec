@@ -94,8 +94,23 @@ ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "program interpre
 ${CROSS_COMPILE}readelf -a ${OUTDIR}/rootfs/bin/busybox | grep "Shared library"
 
 # TODO: Add library dependencies to rootfs
+cd "${OUTDIR}/rootfs"
+SYSROOT=$(${CROSS_COMPILE}gcc -print-sysroot)
+echo "Copying from ${SYSROOT}/lib library to ${OUTDIR}/rootfs/lib"
+cp -a ${SYSROOT}/lib/ld-linux-aarch64.so.1 lib/
+ls -al lib/
+echo "Copying from ${SYSROOT}/lib64 library to ${OUTDIR}/rootfs/lib64"
+cp -a ${SYSROOT}/lib64/libm.so.6 lib64/
+cp -a ${SYSROOT}/lib64/libresolv.so.2 lib64/
+cp -a ${SYSROOT}/lib64/libc.so.6 lib64/
+ls -al lib64/
 
 # TODO: Make device nodes
+echo "Creating device nodes in ${OUTDIR}/rootfs/dev"
+cd "${OUTDIR}/rootfs"
+sudo mknod -m 666 dev/null c 1 3
+sudo mknod -m 600 dev/console c 5 1
+ls -al dev/
 
 # TODO: Clean and build the writer utility
 echo "Building writer app in ${FINDER_APP_DIR}"
@@ -114,7 +129,7 @@ cp ${FINDER_APP_DIR}/conf/username.txt  ${OUTDIR}/rootfs/home/conf/
 ls -al ${OUTDIR}/rootfs/home/
 
 # TODO: Chown the root directory
-chown -R root:root ${OUTDIR}/rootfs
+sudo chown -R root:root ${OUTDIR}/rootfs
 
 # TODO: Create initramfs.cpio.gz
 echo "Creating initramfs.cpio.gz in ${OUTDIR}"
